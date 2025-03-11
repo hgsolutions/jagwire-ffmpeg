@@ -1908,10 +1908,18 @@ static int mpegts_write_packet_internal(AVFormatContext *s, AVPacket *pkt)
             dts += delay;
     }
 
+    /* Jagwire */
+    if(pts == AV_NOPTS_VALUE || dts == AV_NOPTS_VALUE) {
+        if(pts == AV_NOPTS_VALUE) pts = dts;
+        else dts = pts;
+    }
+    /* Jagwire - End */
+
     if (!ts_st->first_timestamp_checked && (pts == AV_NOPTS_VALUE || dts == AV_NOPTS_VALUE)) {
-        av_log(s, AV_LOG_ERROR, "first pts and dts value must be set\n");
+        av_log(s, AV_LOG_ERROR, "first pts and dts value must be set: PTS=%"PRId64", DTS=%"PRId64"\n", pts, dts);
         return AVERROR_INVALIDDATA;
     }
+
     ts_st->first_timestamp_checked = 1;
 
     if (st->codecpar->codec_id == AV_CODEC_ID_H264) {
